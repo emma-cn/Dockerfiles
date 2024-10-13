@@ -1,0 +1,13 @@
+
+services:
+  ubuntu-conda:
+    image: ubuntu-conda:24.04
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080
+    volumes:
+      - D:\LLM\docker\llm:/home/julius/llm
+    container_name: ubuntu-conda
+

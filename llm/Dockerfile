@@ -1,24 +1,27 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3.10.6-slim
+# Use Ubuntu Jammy (22.04) as the base image
+FROM ubuntu:22.04
 
+# Expose the port your application will run on
 EXPOSE 8080
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
+# Update and install Python, pip, and adduser
+RUN apt update && apt install -y \
+    python3 \
+    python3-pip \
+    adduser
 
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
-
-# Install pip requirements
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
-
+# Set the working directory
 WORKDIR /home/julius/llm
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" julius && chown -R julius /home/julius/llm
+# Create a non-root user and assign permissions
+RUN adduser -u 5678 --disabled-password --gecos "" julius && \
+    chown -R julius /home/julius/llm
+
+# Switch to the new non-root user
 USER julius
 
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+# Install Gunicorn and Uvicorn
+RUN pip install --no-cache-dir gunicorn uvicorn
+
+# Run your FastAPI app with Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "-k", "uvicorn.workers.UvicornWorker", "myapp.app:app"]
